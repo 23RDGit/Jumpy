@@ -16,8 +16,79 @@ public class PlayerMove : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		calculateMoves ();
+		calculateKeyboardMoves ();
 	}
+	
+    // Update is called once per frame
+	void Update() {
+		HandleKeyBoardMoves();
+		HandleMouseMoves();
+	}
+    
+ 	void HandleMouseMoves() {
+        //bail if mouse is not down
+		if (!Input.GetMouseButtonDown (0)) 
+			return;
+
+        // get mouse position
+		var mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
+        var x = Mathf.Round(mousePos.x);
+        var y = Mathf.Round(mousePos.y);
+        
+        // get player position
+        var playerX = this.transform.position.x;
+        var playerY = this.transform.position.y;
+        
+        // bail unless mouse pos is adjacent to player
+        if (!(x <= playerX + 2f && y <= playerY + 2f) ||
+            !(x >= playerX - 2f && y >= playerY - 2f))
+            return;
+        
+        // check for a rock at this postion and
+        // then move player to rock         
+        var pos = new Vector3(x, y, 0f);       
+        if (isRockAtPosition(pos))
+            this.transform.position = pos;
+
+        // refresh possible keyboard moves
+		calculateKeyboardMoves ();
+
+	}
+    
+	void HandleKeyBoardMoves () {
+        // bail if key is not down
+		if (!Input.anyKeyDown)
+			return;
+
+        // move to a rock
+		if (canMoveUp && Input.GetKeyDown("w")) // Move up
+            transform.Translate(0.0f, 2f, 0.0f);
+
+        if (canMoveDown && (Input.GetKeyDown("s") || Input.GetKeyDown("x"))) // Move down
+            transform.Translate(0.0f, -2f, 0.0f);
+
+        if (canMoveLeft && Input.GetKeyDown("a")) // Move Left
+            transform.Translate(-2f, 0.0f, 0.0f);
+
+        if (canMoveRight && Input.GetKeyDown("d")) // Move Right
+            transform.Translate(2f, 0.0f, 0.0f);
+
+        if (canMoveLeftUp && Input.GetKeyDown("q")) // Move Left-up Diagonal
+            transform.Translate(-2f, 2f, 0.0f);
+
+        if (canMoveRightUp && Input.GetKeyDown("e")) // Move Right-up Diagonal
+            transform.Translate(2f, 2f, 0.0f);
+
+        if (canMoveLeftDown && Input.GetKeyDown("z")) // Move Left-down Diagonal
+            transform.Translate(-2f, -2f, 0.0f);
+
+        if (canMoveRightDown && Input.GetKeyDown("c")) // Move Right-down Diagonal
+            transform.Translate(2f, -2f, 0.0f);
+
+        // refresh possible keyboard moves
+		calculateKeyboardMoves ();
+	}
+       
 	bool isRockAtPosition(Vector3 position) {
 		var objs = GameObject.FindGameObjectsWithTag("rock");
 		foreach (GameObject go in objs) {
@@ -28,17 +99,17 @@ public class PlayerMove : MonoBehaviour {
 		return false;
 	}
 
-	void calculateMoves() {
+	void calculateKeyboardMoves() {
 		var position = this.transform.position;
-		var left 	= new Vector3(position.x - 1.5f, position.y, 0.0f);
-		var right 	= new Vector3(position.x + 1.5f, position.y, 0.0f);
-		var up 		= new Vector3(position.x, position.y + 1.5f, 0.0f);
-		var down 	= new Vector3(position.x, position.y - 1.5f, 0.0f);
+		var left 	= new Vector3(position.x - 2f, position.y, 0.0f);
+		var right 	= new Vector3(position.x + 2f, position.y, 0.0f);
+		var up 		= new Vector3(position.x, position.y + 2f, 0.0f);
+		var down 	= new Vector3(position.x, position.y - 2f, 0.0f);
 		
-		var leftUp 		= new Vector3(position.x - 1.5f, position.y + 1.5f, 0.0f);
-		var rightUp 	= new Vector3(position.x + 1.5f, position.y + 1.5f, 0.0f);
-		var leftDown 	= new Vector3(position.x - 1.5f, position.y - 1.5f, 0.0f);
-		var rightDown 	= new Vector3(position.x + 1.5f, position.y - 1.5f, 0.0f);
+		var leftUp 		= new Vector3(position.x - 2f, position.y + 2f, 0.0f);
+		var rightUp 	= new Vector3(position.x + 2f, position.y + 2f, 0.0f);
+		var leftDown 	= new Vector3(position.x - 2f, position.y - 2f, 0.0f);
+		var rightDown 	= new Vector3(position.x + 2f, position.y - 2f, 0.0f);
 		
 		canMoveLeft = isRockAtPosition (left);
 		canMoveRight = isRockAtPosition (right);
@@ -48,36 +119,5 @@ public class PlayerMove : MonoBehaviour {
 		canMoveRightUp = isRockAtPosition (rightUp);
 		canMoveLeftDown = isRockAtPosition (leftDown);
 		canMoveRightDown = isRockAtPosition (rightDown);
-	}
-	// Update is called once per frame
-	void Update () {
-		if (!Input.anyKeyDown)
-			return;
-
-		if (canMoveUp && Input.GetKeyDown("w")) // Move Forward
-            transform.Translate(0.0f, 1.5f, 0.0f);
-
-        if (canMoveDown && (Input.GetKeyDown("s") || Input.GetKeyDown("x"))) // Move Backward
-            transform.Translate(0.0f, -1.5f, 0.0f);
-
-        if (canMoveLeft && Input.GetKeyDown("a")) // Move Left
-            transform.Translate(-1.5f, 0.0f, 0.0f);
-
-        if (canMoveRight && Input.GetKeyDown("d")) // Move Right
-            transform.Translate(1.5f, 0.0f, 0.0f);
-
-        if (canMoveLeftUp && Input.GetKeyDown("q")) // Move Forward-Left Diagonal
-            transform.Translate(-1.5f, 1.5f, 0.0f);
-
-        if (canMoveRightUp && Input.GetKeyDown("e")) // Move Forward-Right Diagonal
-            transform.Translate(1.5f, 1.5f, 0.0f);
-
-        if (canMoveLeftDown && Input.GetKeyDown("z")) // Move Backward-Left Diagonal
-            transform.Translate(-1.5f, -1.5f, 0.0f);
-
-        if (canMoveRightDown && Input.GetKeyDown("c")) // Move Backward-Right Diagonal
-            transform.Translate(1.5f, -1.5f, 0.0f);
-
-		calculateMoves ();
 	}
 }
